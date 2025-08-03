@@ -1,0 +1,148 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>表弟的外掛購買教學</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #1c1c1e;
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #2c2c2e;
+            border-radius: 18px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        .marquee-container {
+            overflow: hidden;
+            white-space: nowrap;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        .marquee {
+            display: inline-block;
+            font-size: 24px;
+            font-weight: 600;
+            animation: marquee 12s linear infinite;
+        }
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+        .marquee img {
+            width: 28px;
+            height: 28px;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+        p {
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        .button {
+            display: inline-block;
+            background-color: #007aff;
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            text-align: center;
+            transition: background-color 0.2s;
+        }
+        .button:hover {
+            background-color: #005bb5;
+        }
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+                border-radius: 12px;
+            }
+            .marquee {
+                font-size: 20px;
+            }
+            p {
+                font-size: 14px;
+            }
+            .button {
+                padding: 8px 14px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="marquee-container">
+            <span class="marquee">
+                <img src="https://img.icons8.com/ios-filled/50/ffffff/iphone.png" alt="iOS Icon">
+                表弟的外掛購買教學
+            </span>
+        </div>
+        <p>要在iOS設備上成功運行外掛（未經App Store認證的應用或軟件），需要使用簽名工具來繞過iOS的應用安裝限制。推薦兩款簽名工具：《全能簽》和《輕鬆簽》。這兩款工具功能略有不同，全能簽操作簡單，界面友好，非常適合新手用戶；而輕鬆簽則更適合有一定經驗的用戶，提供更多進階功能。</p>
+        <p>全能簽官方網站：<br>
+            <a href="https://sign.drnrt8.cn/sign/" class="button">訪問全能簽</a>
+        </p>
+        <p>簽名過程需要設備的UDID（唯一設備標識符），這是一個由40個字母和數字組成的字符串，相當於iPhone或iPad的“身份證”。您可以通過連接設備到電腦，使用iTunes或第三方工具（如全能簽提供的UDID查詢功能）來獲取UDID。簽名工具本身（如全能簽）是免費的，但需要購買開發者證書才能完成簽名，因為iOS系統要求應用必須經過證書驗證才能安裝。</p>
+        <p>開發者證書的購買可在全能簽官網完成，僅支持支付寶或微信支付。證書價格根據有效期（通常為一年）和類型（個人或企業）有所不同，建議根據需求選擇合適的證書類型。購買前，請確保您的支付賬戶餘額充足，並檢查網站上的證書價格和有效期說明。</p>
+        <p>完成證書購買後，您需要將證書導入全能簽工具。隨後，在工具中添加您想簽名的軟件包（通常為IPA文件），即可開始簽名過程。簽名完成後，軟件包會生成一個可安裝的版本，您可以通過全能簽提供的下載鏈接將其安裝到iOS設備上。安裝後，需在設備的“設置 > 通用 > 設備管理”中信任該證書，應用才能正常運行。</p>
+    </div>
+    <script>
+        // Ensure marquee loops smoothly by resetting animation
+        const marquee = document.querySelector('.marquee');
+        marquee.addEventListener('animationiteration', () => {
+            marquee.style.animation = 'none';
+            void marquee.offsetWidth; // Trigger reflow
+            marquee.style.animation = 'marquee 12s linear infinite';
+        });
+    </script>
+</body>
+</html>
