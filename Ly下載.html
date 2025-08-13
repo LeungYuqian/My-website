@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>謙下載 - MP4/MP3 下載工具</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#3b82f6">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .language-toggle {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            border-radius: 15px;
+            background: #e2e8f0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .language-toggle.active {
+            background: #3b82f6;
+        }
+        .language-toggle .toggle-switch {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 26px;
+            height: 26px;
+            background: white;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+        .language-toggle.active .toggle-switch {
+            left: 32px;
+        }
+        .download-btn {
+            transition: all 0.3s ease;
+            background-size: 200% auto;
+            background-image: linear-gradient(to right, #3b82f6 0%, #8b5cf6 50%, #3b82f6 100%);
+        }
+        .download-btn:hover {
+            background-position: right center;
+        }
+        .tab {
+            transition: all 0.3s ease;
+        }
+        .tab.active {
+            border-bottom: 3px solid #3b82f6;
+            color: #3b82f6;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-8">
+            <div class="flex items-center">
+                <i class="fas fa-download text-blue-500 text-3xl mr-3"></i>
+                <h1 class="text-2xl font-bold text-gray-800" id="site-title">謙下載</h1>
+            </div>
+            <div class="flex items-center">
+                <span class="mr-2 text-sm" id="language-label">中文</span>
+                <div class="language-toggle" id="language-toggle">
+                    <div class="toggle-switch"></div>
+                </div>
+                <span class="ml-2 text-sm" id="language-label-en">English</span>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="bg-white rounded-xl shadow-md overflow-hidden p-6">
+            <!-- Tabs -->
+            <div class="flex border-b mb-6">
+                <button class="tab active px-4 py-2" id="mp4-tab" data-tab="mp4">
+                    <i class="fas fa-video mr-2"></i>
+                    <span id="mp4-text">MP4 下載</span>
+                </button>
+                <button class="tab px-4 py-2" id="mp3-tab" data-tab="mp3">
+                    <i class="fas fa-music mr-2"></i>
+                    <span id="mp3-text">MP3 下載</span>
+                </button>
+            </div>
+
+            <!-- URL Input -->
+            <div class="mb-6">
+                <label for="url-input" class="block text-sm font-medium text-gray-700 mb-2" id="url-label">
+                    輸入視頻/音頻網址
+                </label>
+                <div class="flex">
+                    <input type="text" id="url-input" placeholder="https://www.youtube.com/watch?v=..." 
+                           class="flex-1 px-4 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <button id="load-btn" class="px-4 py-2 bg-blue-500 text-white rounded-r-lg hover:bg-blue-600 transition">
+                        <i class="fas fa-search mr-2"></i>
+                        <span id="load-text">加載</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Preview Section -->
+            <div id="preview-section" class="hidden mb-6">
+                <div class="flex flex-col md:flex-row gap-6">
+                    <div class="flex-1">
+                        <div class="bg-gray-100 rounded-lg overflow-hidden aspect-video flex items-center justify-center">
+                            <img id="thumbnail" src="" alt="Video thumbnail" class="hidden w-full h-full object-cover">
+                            <div id="no-thumbnail" class="text-gray-400 text-center p-4">
+                                <i class="fas fa-image text-5xl mb-2"></i>
+                                <p id="no-thumb-text">預覽圖將顯示在這裡</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <h3 id="video-title" class="text-lg font-semibold mb-2">標題將顯示在這裡</h3>
+                        <p id="video-duration" class="text-gray-600 mb-4">
+                            <i class="fas fa-clock mr-2"></i>
+                            <span id="duration-text">00:00</span>
+                        </p>
+                        
+                        <div id="mp4-options" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1" id="quality-label">
+                                    選擇品質
+                                </label>
+                                <select id="quality-select" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="high">高品質 (1080p)</option>
+                                    <option value="medium" selected>中品質 (720p)</option>
+                                    <option value="low">低品質 (480p)</option>
+                                </select>
+                            </div>
+                            
+                            <button id="download-mp4-btn" class="download-btn w-full py-3 px-4 text-white font-medium rounded-lg">
+                                <i class="fas fa-download mr-2"></i>
+                                <span id="download-mp4-text">下載 MP4</span>
+                            </button>
+                        </div>
+                        
+                        <div id="mp3-options" class="space-y-4 hidden">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1" id="format-label">
+                                    選擇格式
+                                </label>
+                                <select id="format-select" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="mp3" selected>MP3 (高品質)</option>
+                                    <option value="aac">AAC (中等品質)</option>
+                                    <option value="wav">WAV (無損品質)</option>
+                                </select>
+                            </div>
+                            
+                            <button id="download-mp3-btn" class="download-btn w-full py-3 px-4 text-white font-medium rounded-lg">
+                                <i class="fas fa-download mr-2"></i>
+                                <span id="download-mp3-text">下載 MP3</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Instructions -->
+            <div class="mt-8 bg-blue-50 p-4 rounded-lg">
+                <h3 class="text-lg font-semibold text-blue-800 mb-2" id="how-to-title">如何使用?</h3>
+                <ol class="list-decimal list-inside space-y-2 text-blue-900" id="how-to-list">
+                    <li>複製您想要下載的視頻或音頻的網址</li>
+                    <li>將網址粘貼到上面的輸入框中</li>
+                    <li>點擊"加載"按鈕</li>
+                    <li>選擇您想要的品質/格式</li>
+                    <li>點擊下載按鈕開始下載</li>
+                </ol>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="mt-8 text-center text-gray-600 text-sm">
+            <p id="footer-text">© 2023 謙下載 - 免費MP4/MP3下載工具</p>
+        </footer>
+    </div>
+
+    <script>
+        // Language toggle functionality
+        const languageToggle = document.getElementById('language-toggle');
+        let currentLanguage = 'zh';
+        
+        // Language translations
+        const translations = {
+            zh: {
+                siteTitle: '謙下載',
+                urlLabel: '輸入視頻/音頻網址',
+                loadText: '加載',
+                mp4Text: 'MP4 下載',
+                mp3Text: 'MP3 下載',
+                noThumbText: '預覽圖將顯示在這裡',
+                qualityLabel: '選擇品質',
+                downloadMp4Text: '下載 MP4',
+                formatLabel: '選擇格式',
+                downloadMp3Text: '下載 MP3',
+                howToTitle: '如何使用?',
+                howToList: [
+                    '複製您想要下載的視頻或音頻的網址',
+                    '將網址粘貼到上面的輸入框中',
+                    '點擊"加載"按鈕',
+                    '選擇您想要的品質/格式',
+                    '點擊下載按鈕開始下載'
+                ],
+                footerText: '© 2023 謙下載 - 免費MP4/MP3下載工具'
+            },
+            en: {
+                siteTitle: 'Qian Download',
+                urlLabel: 'Enter video/audio URL',
+                loadText: 'Load',
+                mp4Text: 'MP4 Download',
+                mp3Text: 'MP3 Download',
+                noThumbText: 'Preview will appear here',
+                qualityLabel: 'Select quality',
+                downloadMp4Text: 'Download MP4',
+                formatLabel: 'Select format',
+                downloadMp3Text: 'Download MP3',
+                howToTitle: 'How to use?',
+                howToList: [
+                    'Copy the URL of the video/audio you want to download',
+                    'Paste the URL into the input box above',
+                    'Click the "Load" button',
+                    'Select your preferred quality/format',
+                    'Click the download button to start'
+                ],
+                footerText: '© 2023 Qian Download - Free MP4/MP3 Download Tool'
+            }
+        };
+        
+        // Tab switching functionality
+        const mp4Tab = document.getElementById('mp4-tab');
+        const mp3Tab = document.getElementById('mp3-tab');
+        const mp4Options = document.getElementById('mp4-options');
+        const mp3Options = document.getElementById('mp3-options');
+        
+        mp4Tab.addEventListener('click', () => {
+            mp4Tab.classList.add('active');
+            mp3Tab.classList.remove('active');
+            mp4Options.classList.remove('hidden');
+            mp3Options.classList.add('hidden');
+        });
+        
+        mp3Tab.addEventListener('click', () => {
+            mp3Tab.classList.add('active');
+            mp4Tab.classList.remove('active');
+            mp3Options.classList.remove('hidden');
+            mp4Options.classList.add('hidden');
+        });
+        
+        // Language toggle event
+        languageToggle.addEventListener('click', () => {
+            languageToggle.classList.toggle('active');
+            currentLanguage = currentLanguage === 'zh' ? 'en' : 'zh';
+            updateLanguage();
+        });
+        
+        // Update all text elements based on current language
+        function updateLanguage() {
+            const lang = translations[currentLanguage];
+            
+            document.getElementById('site-title').textContent = lang.siteTitle;
+            document.getElementById('url-label').textContent = lang.urlLabel;
+            document.getElementById('load-text').textContent = lang.loadText;
+            document.getElementById('mp4-text').textContent = lang.mp4Text;
+            document.getElementById('mp3-text').textContent = lang.mp3Text;
+            document.getElementById('no-thumb-text').textContent = lang.noThumbText;
+            document.getElementById('quality-label').textContent = lang.qualityLabel;
+            document.getElementById('download-mp4-text').textContent = lang.downloadMp4Text;
+            document.getElementById('format-label').textContent = lang.formatLabel;
+            document.getElementById('download-mp3-text').textContent = lang.downloadMp3Text;
+            document.getElementById('how-to-title').textContent = lang.howToTitle;
+            document.getElementById('footer-text').textContent = lang.footerText;
+            
+            const howToList = document.getElementById('how-to-list');
+            howToList.innerHTML = '';
+            lang.howToList.forEach(item => {
+                const li = document.createElement('li');
+                li.textContent = item;
+                howToList.appendChild(li);
+            });
+            
+            // Update language labels
+            document.getElementById('language-label').textContent = currentLanguage === 'zh' ? '中文' : 'Chinese';
+            document.getElementById('language-label-en').textContent = currentLanguage === 'en' ? 'English' : '英文';
+        }
+        
+        // Real download functionality
+        document.getElementById('load-btn').addEventListener('click', async () => {
+            const urlInput = document.getElementById('url-input').value.trim();
+            
+            if (!urlInput) {
+                alert(currentLanguage === 'zh' ? '請輸入有效的網址' : 'Please enter a valid URL');
+                return;
+            }
+            
+            try {
+                // Fetch video info from backend API
+                const response = await fetch(`/api/info?url=${encodeURIComponent(urlInput)}`);
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                // Show preview section
+                document.getElementById('preview-section').classList.remove('hidden');
+                document.getElementById('video-title').textContent = data.title;
+                document.getElementById('duration-text').textContent = data.duration;
+                
+                // Show thumbnail if available
+                if (data.thumbnail) {
+                    document.getElementById('thumbnail').src = data.thumbnail;
+                    document.getElementById('thumbnail').classList.remove('hidden');
+                    document.getElementById('no-thumbnail').classList.add('hidden');
+                } else {
+                    document.getElementById('thumbnail').classList.add('hidden');
+                    document.getElementById('no-thumbnail').classList.remove('hidden');
+                }
+                
+            } catch (error) {
+                alert(currentLanguage === 'zh' 
+                    ? `獲取視頻信息失敗: ${error.message}` 
+                    : `Failed to fetch video info: ${error.message}`);
+            }
+        });
+        
+        document.getElementById('download-mp4-btn').addEventListener('click', async () => {
+            const urlInput = document.getElementById('url-input').value.trim();
+            const quality = document.getElementById('quality-select').value;
+            
+            if (!urlInput) {
+                alert(currentLanguage === 'zh' ? '請先加載視頻' : 'Please load a video first');
+                return;
+            }
+            
+            try {
+                // Start MP4 download
+                window.open(`/api/download?url=${encodeURIComponent(urlInput)}&format=mp4&quality=${quality}`, '_blank');
+            } catch (error) {
+                alert(currentLanguage === 'zh' 
+                    ? `下載失敗: ${error.message}` 
+                    : `Download failed: ${error.message}`);
+            }
+        });
+        
+        document.getElementById('download-mp3-btn').addEventListener('click', async () => {
+            const urlInput = document.getElementById('url-input').value.trim();
+            const format = document.getElementById('format-select').value;
+            
+            if (!urlInput) {
+                alert(currentLanguage === 'zh' ? '請先加載音頻' : 'Please load an audio first');
+                return;
+            }
+            
+            try {
+                // Start MP3 download
+                window.open(`/api/download?url=${encodeURIComponent(urlInput)}&format=mp3&quality=${format}`, '_blank');
+            } catch (error) {
+                alert(currentLanguage === 'zh' 
+                    ? `下載失敗: ${error.message}` 
+                    : `Download failed: ${error.message}`);
+            }
+        });
+    </script>
+    <script>
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registration successful');
+                    })
+                    .catch(err => {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>
